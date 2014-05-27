@@ -1,0 +1,41 @@
+aList = [123, 'xyz', 'zara', 'abc'];
+print "len=",len(aList)
+print "aList[3]=",aList[3]
+print aList
+print "A List : ", aList.pop(0);1
+print aList
+print "A List : ", aList.pop();
+print aList
+
+import logging
+
+print logging.getLogger() == logging.getLogger("")
+aList = [1, 2, 3, 4]
+for a in aList:
+   print a
+
+for index, item in enumerate(aList):
+        print index, item
+
+for index, item in enumerate(aList[1:]):
+        print index, item
+
+class A:
+  a = 0
+  @classmethod
+  def clsmethod(cls):
+	cls.a = 1
+
+  def memmethod(self):
+        print self.a
+        self.a = 2
+
+print "A.a", A.a
+A.clsmethod()
+print "A.a", A.a
+
+af = A()
+af.memmethod()
+print "A.a", A.a
+print "af.a", af.a
+   

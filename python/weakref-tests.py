@@ -22,6 +22,10 @@ def callback(reference):
     """Invoked when referenced object is deleted"""
     print 'callback(', reference, ')'
 
+class ExpensiveObject(object):
+   def __del__(self):
+      print '(Deleting %s)' % self
+
 obj = ExpensiveObject()
 r = weakref.ref(obj, callback)
 

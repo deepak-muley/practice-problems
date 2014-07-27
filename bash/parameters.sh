@@ -45,6 +45,7 @@ then
   echo "This script needs at least $MINPARAMS command-line arguments!"
 fi  
 
+echo "what is dollar@ "$@""
 echo
 
 exit 0

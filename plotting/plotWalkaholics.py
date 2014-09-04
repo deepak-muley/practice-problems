@@ -39,6 +39,8 @@ yAlex = []
 yShaheer = []
 for row in rows:
    d = row.custom['date'].text
+   if d is None:
+      break
    d = dt.datetime.strptime(d, '%m/%d/%Y').date()
    xDate.append(d)
    yDeepakm.append(row.custom['deepakm'].text)

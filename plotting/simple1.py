@@ -11,3 +11,4 @@ plt.plot(x, y)
 
 #show plot
 plt.show()
+plt.savefig('sample1.png')

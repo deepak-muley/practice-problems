@@ -19,7 +19,7 @@ def getText(cell):
     t = cell.text.strip().split(" ")[0]
     return t.strip().split("[")[0]
 
-def populateDataFrame(year):
+def scrapeOlympicMedalInfo(year):
     dataDir = "olympics_medal_data"
     if not os.path.exists(dataDir):
         os.makedirs(dataDir)
@@ -112,34 +112,6 @@ def populateDataFrame(year):
     df = df.set_index(['year', 'country'])
     return df
 
-def plotDataFrames(df):
-    #fig, axes = plt.subplots(nrows=4, ncols=1)
-    #for i, c in enumerate(df.columns[1:]):
-    #    df[c].plot(kind='bar', ax=axes[i], figsize=(12, 10), title=c)
-    #plt.savefig('EU1.png', bbox_inches='tight')
-
-    return
-
-    #https://datasciencelab.wordpress.com/2013/12/21/beautiful-plots-with-pandas-and-matplotlib/
-    # Create a figure of given size
-    fig = plt.figure(figsize=(16,12))
-    # Add a subplot
-    ax = fig.add_subplot(111)
-    # Set title
-    ttl = 'Olympics medals by Country and then in future by year'
-
-    ax.set_xlabel("Gold Medals")
-    ax.set_ylabel("Countries")
-
-    # Set color transparency (0: transparent; 1: solid)
-    a = 0.7
-    # Create a colormap
-    customcmap = [(x/90.0,  x/130.0, 0.05) for x in range(len(df))]
-    # Plot the 'population' column as horizontal bar plot
-    df['gold'].plot(kind='barh', ax=ax, alpha=a, legend=False, color=customcmap,
-                        edgecolor='w', xlim=(0,max(df['gold'])), title=ttl)
-
-
 if __name__ == "__main__":
     #pdb.set_trace()
     #print populateDataFrame(2008)
@@ -149,7 +121,7 @@ if __name__ == "__main__":
     modernOlympicsStartYear=1896
     dff = None
     for year in xrange(modernOlympicsStartYear, 2020, 4):
-        df = populateDataFrame(year)
+        df = scrapeOlympicMedalInfo(year)
         if df is None:
             continue
         print df
@@ -161,4 +133,3 @@ if __name__ == "__main__":
     if dff is None:
         exit(1)
 
-    #plotDataFrames(dff)

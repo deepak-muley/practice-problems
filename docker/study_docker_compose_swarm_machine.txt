@@ -1,0 +1,140 @@
+#To build and start container using docker-compose.yml
+docker-compose build
+docker-compose up
+--------------------
+
+#To start the Flask REST API server
+python -u app.py
+---------------------
+
+#To start a docker machine using virtualbox driver
+docker-machine create --driver virtualbox vm1
+
+#Set env variable to use docker-machine node's docker daemon
+>eval $(docker-machine env vm1)
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.100:2376"
+export DOCKER_CERT_PATH="/home/deepakm/.docker/machine/machines/vm1"
+export DOCKER_MACHINE_NAME="vm1"
+
+#To get the ip of the docker-machine 
+docker-machine ip vm1
+
+#To delete the docker-machine
+docker-machine stop vm1
+docker-machine kill vm1
+docker-machine rm vm1
+export DOCKER_TLS_VERIFY=
+export DOCKER_HOST=
+export DOCKER_CERT_PATH=
+export DOCKER_MACHINE_NAME=
+-----------------
+
+#To create a swarm farm
+swarmToken=$(docker run swarm create)
+
+#To create swarm master node
+docker-machine create -d virtualbox --swarm --swarm-master --swarm-discovery=token://$swarmToken my-swarm-master
+
+#To create non-master swarm node
+docker-machine create -d virtualbox --swarm --swarm-discovery=token://$swarmToken my-swarm-01
+docker-machine create -d virtualbox --swarm --swarm-discovery=token://$swarmToken my-swarm-02
+
+#Set env variables to point to docker swarm instead of docker daemon
+>eval $(docker-machine env --swarm my-swarm-master)
+export DOCKER_TLS_VERIFY="1"
+export DOCKER_HOST="tcp://192.168.99.101:3376"
+export DOCKER_CERT_PATH="/home/deepakm/.docker/machine/machines/my-swarm-master"
+export DOCKER_MACHINE_NAME="my-swarm-master"
+
+ % docker run swarm list token://$swarmToken
+192.168.99.101:2376
+192.168.99.100:2376
+
+#to get the hostip of a container from a farm
+#https://docs.docker.com/engine/reference/commandline/inspect/
+docker inspect --format='{{(index (index .NetworkSettings.Ports "80/tcp") 0).HostIp}}' e8c9f5ef36b63e21267e69e4aea1e5768167489727d3e515b76e3dc308e08451
+
+#Point docker-compose to point to swarm cluster to run the containers
+docker-compose up -d
+docker-compose ps
+docker ps
+
+docker run -p 25:25 -p 80:80 -p 456:456 -p 587:587 -p 110:110 -p 143:143 -p 993:993 -p 995:995 -p 443:443 -p 8080:8080 -p 8443:8443 -p 7071:7071 -p 9071:9071 -h zimbra86-docker.zimbra.io --dns 127.0.0.1 --dns 8.8.8.8 -i -t -e PASSWORD=Zimbra2015 zimbra_docker
+
+
+#create 10 copies of this container
+docker-compose scale worker=10
+
+#consolidate all the logs from all the compose created containers
+docker-compose logs
+------------------ 
+
+sample 1
+--------
+
+#general structure of docker-compose.yml
+version: '2'
+services:
+  web:
+	build:
+	  context: ./webapp
+	  dockerfile: Dockerfile-alternate
+	  image: webapp:tag
+	  args:
+		buildno: 1
+	depends_on:
+	  - db
+	  - redis
+	links:
+	  - db
+	  - redis
+
+  redis:
+    image: redis
+  db:
+    image: postgres
+
+sample 2
+--------
+
+web:
+  build: .
+  command: ./run_web.sh
+  volumes:
+    - .:/app
+  ports:
+    - "8000:8000"
+  links:
+    - db:db
+    - rabbitmq:rabbit
+    - redis:redis
+    
+sample 3
+-----------
+
+version: '2'
+
+services:
+  mail:
+    image: tvial/docker-mailserver:latest
+    # build: .
+    hostname: mail
+    domainname: domain.com
+    container_name: mail
+    ports:
+    - "25:25"
+    - "143:143"
+    - "587:587"
+    - "993:993"
+    volumes:
+    - maildata:/var/mail
+    - ./config/:/tmp/docker-mailserver/
+
+volumes:
+  maildata:
+    driver: local
+    
+    
+----------------------
+

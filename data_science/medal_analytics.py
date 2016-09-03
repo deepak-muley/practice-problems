@@ -21,24 +21,29 @@ class SummerOlympics(object):
         t = cell.text.strip().split(" ")[0]
         return t.strip().split("[")[0]
 
-    def __scrapeOlympicMedalInfo(self, year):
-        dataDir = "olympics_medal_data"
+    def __fetchUrlData(self, url)
+        header = {'User-Agent': 'Mozilla/5.0'} #Needed to prevent 403 error on Wikipedia
+        req = urllib2.Request(wiki,headers=header)
+        try:
+            page = urllib2.urlopen(req)
+        except urllib2.HTTPError, e:
+            print "URL not available for year %s" % year
+            return
+        except urllib2.URLError, e:
+            print (e, e.args)
+            return
+        return BeautifulSoup(page, "lxml") 
+
+    def __scrapeOlympicMedalInfo(self, year, 
+                                    dataDir="olympics_medal_data", 
+                                    dataFilePostfix="-medals.csv"):
         if not os.path.exists(dataDir):
             os.makedirs(dataDir)
-        filePath = os.path.join(os.getcwd(), dataDir, "%s-medals.csv" % year)
+        df = None
+        filePath = os.path.join(os.getcwd(), dataDir, "%s-%s" % (year, dataFilePostfix))
         if not os.path.exists(filePath):
             wiki = "https://en.wikipedia.org/wiki/%s_Summer_Olympics_medal_table" % year
-            header = {'User-Agent': 'Mozilla/5.0'} #Needed to prevent 403 error on Wikipedia
-            req = urllib2.Request(wiki,headers=header)
-            try:
-                page = urllib2.urlopen(req)
-            except urllib2.HTTPError, e:
-	        print "URL not available for year %s" % year
-	        return
-            except urllib2.URLError, e:
-	        print (e, e.args)
-                return
-            soup = BeautifulSoup(page, "lxml") 
+            soup = self.__fetchUrlData(wiki)
             table = soup.findAll("table", { "class" : [ "wikitable sortable plainrowheaders", 
                                                         "wikitable"]})
             if not table:
@@ -115,11 +120,6 @@ class SummerOlympics(object):
         return df
 
     def populateSummerOlympicMedalsForAllYears(self):
-        so = SummerOlympics()
-        #pdb.set_trace()
-        #print scrapeOlympicMedalInfo(2008)
-        #import sys; sys.exit(0)
-
         #https://en.wikipedia.org/wiki/Olympic_medal_table
         modernOlympicsStartYear=1896
         dff = None
@@ -134,9 +134,35 @@ class SummerOlympics(object):
                 dff = dff.append(df)
         return dff
 
+    def __scrapeSummerOlympicGamesInfo(self,
+                                    dataDir="olympics_medal_data", 
+                                    dataFilePostfix="games.csv"):
+        if not os.path.exists(dataDir):
+            os.makedirs(dataDir)
+        df = None
+        filePath = os.path.join(os.getcwd(), dataDir, "%s" % (dataFilePostfix))
+        if not os.path.exists(filePath):
+            wiki = "https://en.wikipedia.org/wiki/Summer_Olympic_Games"
+            soup = self.__fetchUrlData(wiki)
+            table = soup.findAll("table", { "class" : [ "wikitable sortable plainrowheaders", 
+                                                        "wikitable"]})
+            if not table:
+                print "Could not tables in url %s" % wiki
+                return
+            table = table[0]
+
+        return df
+
+    def populateSummerOlympicGamesDetails(self):
+        df = self.__scrapeSummerOlympicGamesInfo()
+        return df
+
 if __name__ == "__main__":
     so = SummerOlympics()
-    dff = so.populateSummerOlympicMedalsForAllYears()
-    if dff is None:
+    dfMedals = so.populateSummerOlympicMedalsForAllYears()
+    if dfMedals is None:
         exit(1)
 
+    dfGames = so.populateSummerOlympicGamesDetails)
+    if dfMedals is None:
+        exit(1)
